@@ -3,6 +3,7 @@ import {Modal, ModalBody, ModalFooter, ModalHeader} from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'materialize-css/dist/css/materialize.min.css';
 import axios from 'axios';
+import dateday from "./dateday";
 
 const ListAppointment = () => {
   const apiUrl = "http://localhost/apiPhp/";
@@ -10,6 +11,8 @@ const ListAppointment = () => {
   const [modalInsert, SetModalInsert] = useState(false);
   const [modalUpdate, SetModalUpdate] = useState(false);
   const [modalDelete, SetModalDelete] = useState(false);
+  const [modalNotNull, SetModalNotNull] = useState(false);
+  const [modalNotNumber, SetModalNotNumber] = useState(false);
   const [AppointmentSelect, SetAppointmentSelect] = useState({
     name: '',
     lastname: '',
@@ -21,9 +24,9 @@ const ListAppointment = () => {
 
     const createAppointment=e=>{
       const {name, value}=e.target;
-      SetAppointmentSelect((prevState)=>({
-          ...prevState,
-          [name]: value
+        SetAppointmentSelect((prevState)=>({
+            ...prevState,
+            [name]: value
       }))
       console.log(AppointmentSelect);
     }
@@ -39,6 +42,14 @@ const ListAppointment = () => {
 
     const openCloseModalDelete = ()=>{
     SetModalDelete(!modalDelete);
+    }
+
+    const openCloseModalNotNull = ()=>{
+        SetModalNotNull(!modalNotNull);
+    }
+
+    const openCloseModalNotNumber = ()=>{
+        SetModalNotNumber(!modalNotNumber);
     }
 
     const appointmentGet = async()=>{
@@ -63,8 +74,16 @@ const ListAppointment = () => {
         f.append("METHOD", "POST");
         await axios.post(apiUrl, f)
         .then(response=>{
-            setData(data.concat(response.data));
-            openCloseModalInsert();
+            if (AppointmentSelect.name!="" && AppointmentSelect.lastname!="" && AppointmentSelect.document!="" && AppointmentSelect.birthdate!="" && AppointmentSelect.address!="" && AppointmentSelect.phone!=""){
+                if (AppointmentSelect.phone.length === 10) {
+                    setData(data.concat(response.data));
+                    openCloseModalInsert();
+                }else{
+                    openCloseModalNotNumber();
+                }
+            }else{
+                openCloseModalNotNull();
+            }
         })
         .catch(error=>{
             console.log(error);
@@ -85,16 +104,22 @@ const ListAppointment = () => {
             var dataNew = data;
             dataNew.map(appointment=>{
                 if(appointment.id===AppointmentSelect.id){
-                    appointment.name=AppointmentSelect.name;
-                    appointment.lastname=AppointmentSelect.lastname;
-                    appointment.document=AppointmentSelect.document;
-                    appointment.birthdate=AppointmentSelect.birthdate;
-                    appointment.address=AppointmentSelect.address;
-                    appointment.phone=AppointmentSelect.phone;
+
+                        appointment.name=AppointmentSelect.name;
+                        appointment.lastname=AppointmentSelect.lastname;
+                        appointment.document=AppointmentSelect.document;
+                        appointment.birthdate=AppointmentSelect.birthdate;
+                        appointment.address=AppointmentSelect.address;
+                        appointment.phone=AppointmentSelect.phone;
+
                 }
             });
-            setData(dataNew);
-            openCloseModalUpdate();
+            if (AppointmentSelect.phone.length === 10) {
+               setData(dataNew);
+               openCloseModalUpdate();
+            }else{
+               openCloseModalNotNumber();
+            }
         }).catch(error=>{
             console.log(error);
           })
@@ -126,9 +151,13 @@ const ListAppointment = () => {
     },[])
 
     return(
-
+    <div>
     <div className="container">
-        <a class="modal-close waves-effect waves-green btn-flat" onClick={()=>openCloseModalInsert()}>Agendar Cita</a>
+        <br/><br/><br/>
+        <h4>Agenda Facil y Rapido. Ingresa tus datos personales y luego agrega una cita para el dia que necesitas ser atendido y listo.</h4>
+        <br/><br/><br/><br/><br/>
+        <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2 btn-large" type="submit" name="action" onClick={()=>openCloseModalInsert()}> DATOS PERSONALES </button>
+        <br/><br/><br/>
         <table>
             <thead>
             <tr>
@@ -154,8 +183,8 @@ const ListAppointment = () => {
                         <td>{appointment.address}</td>
                         <td>{appointment.phone}</td>
                         <td>
-                            <button class="btn waves-effect waves-light" type="submit" name="action" onClick={()=>selectAppointment(appointment, "update")}>Editar</button> {"  "}
-                            <button class="btn waves-effect waves-light" type="submit" name="action" onClick={()=>selectAppointment(appointment, "delete")}>Eliminar</button>
+                            <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" type="submit" name="action" onClick={()=>selectAppointment(appointment, "update")}>Editar</button> {"  "}
+                            <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2" type="submit" name="action" onClick={()=>selectAppointment(appointment, "delete")}>Eliminar</button>
                         </td>
                     </tr>
                 ))}
@@ -172,18 +201,18 @@ const ListAppointment = () => {
                 <label>Apellido</label>
                 <input type="text" className="form-control" name="lastname" onChange={createAppointment}/>
                 <label>Documento</label>
-                <input type="text" className="form-control" name="document" onChange={createAppointment}/>
+                <input type="number" className="form-control" name="document" onChange={createAppointment}/>
                 <label>Fecha de nacimiento</label>
                 <input type="text" className="form-control" name="birthdate" onChange={createAppointment}/>
                 <label>Direccion</label>
                 <input type="text" className="form-control" name="address" onChange={createAppointment}/>
                 <label>Telefono movil</label>
-                <input type="text" className="form-control" name="phone" onChange={createAppointment}/>
+                <input type="number" className="form-control" name="phone" onChange={createAppointment}/>
                 </div>
             </ModalBody>
             <ModalFooter>
-                <button className="btn btn-primary" onClick={()=>appointmentPost()}>Guardar</button>{"   "}
-                <button className="btn btn-danger" onClick={()=>openCloseModalInsert()}>Cancelar</button>
+                <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>appointmentPost()}>Guardar</button>{"   "}
+                <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2" onClick={()=>openCloseModalInsert()}>Cancelar</button>
             </ModalFooter>
         </Modal>
 
@@ -207,8 +236,8 @@ const ListAppointment = () => {
                 </div>
             </ModalBody>
             <ModalFooter>
-                <button className="btn btn-primary" onClick={()=>appointmentPut()}>Guardar</button>{"   "}
-                <button className="btn btn-danger" onClick={()=>openCloseModalUpdate()}>Cancelar</button>
+                <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>appointmentPut()}>Guardar</button>{"   "}
+                <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2" onClick={()=>openCloseModalUpdate()}>Cancelar</button>
             </ModalFooter>
         </Modal>
 
@@ -218,10 +247,31 @@ const ListAppointment = () => {
             Estás seguro que deseas eliminar la cita de {AppointmentSelect && AppointmentSelect.name} {AppointmentSelect && AppointmentSelect.lastname}?
             </ModalBody>
             <ModalFooter>
-            <button className="btn btn-danger" onClick={()=>appointmentDelete()}>Sí</button>
-            <button className="btn btn-secondary" onClick={()=>openCloseModalDelete()}>No</button>
+            <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2" onClick={()=>appointmentDelete()}>Sí</button>
+            <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>openCloseModalDelete()}>No</button>
             </ModalFooter>
         </Modal>
+
+        {/* modal para confirmar que no hayan dats vacios */}
+        <Modal isOpen={modalNotNull}>
+            <ModalBody>
+            Asegurese de que todos los campos esten llenos antes de continuar...
+            </ModalBody>
+            <ModalFooter>
+            <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>openCloseModalNotNull()}>OK</button>
+            </ModalFooter>
+        </Modal>
+
+        {/* modal para confirmar que el campo sea de 10 digitos */}
+        <Modal isOpen={modalNotNumber}>
+            <ModalBody>
+            Asegurese de que el campo "Telefono móvil" sea de 10 digitos...
+            </ModalBody>
+            <ModalFooter>
+            <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>openCloseModalNotNumber()}>OK</button>
+            </ModalFooter>
+        </Modal>
+    </div>
     </div>
     )
 

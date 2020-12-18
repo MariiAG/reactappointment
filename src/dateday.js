@@ -10,6 +10,7 @@ const Listdateday = () => {
   const [modalInsert, SetModalInsert] = useState(false);
   const [modalUpdate, SetModalUpdate] = useState(false);
   const [modalDelete, SetModalDelete] = useState(false);
+  const [modalNotNull, SetModalNotNull] = useState(false);
   const [DateDaySelect, SetDateDaySelect] = useState({
     day: '',
     place: '',
@@ -37,6 +38,10 @@ const Listdateday = () => {
     SetModalDelete(!modalDelete);
     }
 
+    const openCloseModalNotNull = ()=>{
+        SetModalNotNull(!modalNotNull);
+    }
+
     const dateDayGet = async()=>{
       await axios.get(apiUrl)
       .then(response=>{
@@ -55,8 +60,12 @@ const Listdateday = () => {
         f.append("METHOD", "POST");
         await axios.post(apiUrl, f)
         .then(response=>{
-            setData(data.concat(response.data));
-            openCloseModalInsert();
+            if (DateDaySelect.day!="" && DateDaySelect.place!=""){
+                setData(data.concat(response.data));
+                openCloseModalInsert();
+            }else{
+                openCloseModalNotNull();
+            }
         })
         .catch(error=>{
             console.log(error);
@@ -73,8 +82,8 @@ const Listdateday = () => {
             var dataNew = data;
             dataNew.map(dateday=>{
                 if(dateday.id===DateDaySelect.id){
-                    dateday.name=DateDaySelect.name;
-                    dateday.lastname=DateDaySelect.lastname;
+                    dateday.day=DateDaySelect.day;
+                    dateday.place=DateDaySelect.place;
                 }
             });
             setData(dataNew);
@@ -112,7 +121,8 @@ const Listdateday = () => {
     return(
     <div className="container">
         <br/><br/><br/>
-        <a class="modal-close waves-effect waves-green btn-flat" onClick={()=>openCloseModalInsert()}>Agendar fecha de Cita</a>
+        <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2 btn-large" type="submit" name="action" onClick={()=>openCloseModalInsert()}>AGENDAR FECHA DE LA CITA</button>
+        <br/><br/><br/>
         <table>
             <thead>
             <tr>
@@ -130,14 +140,14 @@ const Listdateday = () => {
                         <td>{dateday.day}</td>
                         <td>{dateday.place}</td>
                         <td>
-                            <button class="btn waves-effect waves-light" type="submit" name="action" onClick={()=>selectDateDay(dateday, "update")}>Editar</button> {"  "}
-                            <button class="btn waves-effect waves-light" type="submit" name="action" onClick={()=>selectDateDay(dateday, "delete")}>Eliminar</button>
+                            <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" type="submit" name="action" onClick={()=>selectDateDay(dateday, "update")}>Editar</button> {"  "}
+                            <button class="btn waves-effect waves-light pink darken-3 white-text text-darken-2" type="submit" name="action" onClick={()=>selectDateDay(dateday, "delete")}>Eliminar</button>
                         </td>
                     </tr>
                 ))}
             </tbody>
         </table>
-
+        <br/><br/><br/><br/><br/>
         {/* modal para crear registro */}
         <Modal isOpen={modalInsert}>
             <ModalHeader>Agendar Cita</ModalHeader>
@@ -150,8 +160,8 @@ const Listdateday = () => {
                 </div>
             </ModalBody>
             <ModalFooter>
-                <button className="btn btn-primary" onClick={()=>dateDayPost()}>Guardar</button>{"   "}
-                <button className="btn btn-danger" onClick={()=>openCloseModalInsert()}>Cancelar</button>
+                <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>dateDayPost()}>Guardar</button>{"   "}
+                <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2" onClick={()=>openCloseModalInsert()}>Cancelar</button>
             </ModalFooter>
         </Modal>
 
@@ -163,23 +173,23 @@ const Listdateday = () => {
                 <label>Nombre</label>
                 <input type="text" className="form-control" name="day" onChange={createDateDay} value={DateDaySelect && DateDaySelect.day}/>
                 <label>Apellido</label>
-                <input type="text" className="form-control" name="place" onChange={createDateDay} value={DateDaySelect && DateDaySelect.place}/>
+                <input type="number" className="form-control" name="place" onChange={createDateDay} value={DateDaySelect && DateDaySelect.place}/>
                 </div>
             </ModalBody>
             <ModalFooter>
-                <button className="btn btn-primary" onClick={()=>dateDayPut()}>Guardar</button>{"   "}
-                <button className="btn btn-danger" onClick={()=>openCloseModalUpdate()}>Cancelar</button>
+                <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2" onClick={()=>dateDayPut()}>Guardar</button>{"   "}
+                <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2"onClick={()=>openCloseModalUpdate()}>Cancelar</button>
             </ModalFooter>
         </Modal>
 
         {/* modal para confirmar eliminación */}
         <Modal isOpen={modalDelete}>
             <ModalBody>
-            Estás seguro que deseas eliminar la cita de {DateDaySelect && DateDaySelect.name} {DateDaySelect && DateDaySelect.lastname}?
+            Estás seguro que deseas eliminar la cita del dia {DateDaySelect && DateDaySelect.day}?
             </ModalBody>
             <ModalFooter>
-            <button className="btn btn-danger" onClick={()=>dateDayDelete()}>Sí</button>
-            <button className="btn btn-secondary" onClick={()=>openCloseModalDelete()}>No</button>
+                <button className="btn waves-effect waves-light pink darken-3 white-text text-darken-2" onClick={()=>dateDayDelete()}>Sí</button>
+                <button className="btn waves-effect waves-light blue darken-1 white-text text-darken-2"onClick={()=>openCloseModalDelete()}>No</button>
             </ModalFooter>
         </Modal>
     </div>
